@@ -2,7 +2,8 @@
 ](https://img.shields.io/github/license/syednabilashraf/sync-remote.nvim?color=%23000080&style=for-the-badge)
 
 # sync-remote.nvim
-Remote development plugin with for Neovim.
+
+Remote development plugin for Neovim.
 
 ## Prerequisites
 - [rsync](https://github.com/WayneD/rsync/blob/master/INSTALL.md)
