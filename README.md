@@ -1,13 +1,18 @@
-# sync-remote:
-A Neovim plugin for syncing remote and local files using rsync.
+![License
+](https://img.shields.io/github/license/syednabilashraf/sync-remote.nvim?color=%23000080&style=for-the-badge)
 
-## Installation
-### Prerequisite
+# sync-remote.nvim
+Remote development plugin with for Neovim.
+
+## Prerequisites
 - [rsync](https://github.com/WayneD/rsync/blob/master/INSTALL.md)
 
 ```
 sudo apt install rsync
 ```
+
+## Installation
+
 
 ### Using [Lazy.nvim](https://github.com/folke/lazy.nvim)
 
@@ -25,7 +30,7 @@ use {
 }
 ```
     
-### Configuration
+## Configuration
 Create a ```.nvim/config.txt``` file at the root of your project with the following content:
 
 ```
@@ -40,7 +45,7 @@ Config fields summary:
 - ```remote_root```    combination of username, hostname and remote_path. Example: johndoe@172.26.221.11:/home/project
 - ```local_root```     the local folder to be synced. Example: ~/home/project
 
-### Commands
+## Commands
 
 - ```:SyncRemoteFileUp``` syncs the active file from local to remote
 - ```:SyncRemoteUp``` syncs all files from local_root to remote_root
