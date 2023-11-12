@@ -4,7 +4,6 @@ local cwd = vim.loop.cwd()
 
 local function loadConfig()
 	local configFilePath = cwd .. "/.nvim/config.txt"
-
 	local file = io.open(configFilePath, "r")
 
 	if file then
@@ -23,7 +22,10 @@ end
 
 local function isConfigFileValid()
 	if next(config) == nil then
-		vim.notify(".nvim/config.txt file not found in current working directory. You can add it here" .. cwd)
+		vim.notify(
+			".nvim/config.txt file not found in current working directory. If the current working directory is the local folder you wish to sync with remote, then you can add the config file here: "
+				.. cwd
+		)
 		return false
 	end
 end
