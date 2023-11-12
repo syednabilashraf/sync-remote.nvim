@@ -31,10 +31,35 @@ local function isConfigFileValid()
 end
 
 function M.setup()
-	vim.notify("EXECUTED SYNC SETUP")
-	vim.cmd([[command! SyncRemoteFileUp lua require('sync-remote').syncRemoteFileUp()]])
-	vim.api.nvim_set_keymap("n", "<leader>M", ":SyncRemoteUp<CR>", { noremap = true, silent = true })
 	loadConfig()
+
+	vim.cmd([[command! SyncRemoteFileUp lua require('sync-remote').syncRemoteFileUp()]])
+	vim.api.nvim_set_keymap("n", "<leader>M", ":SyncRemoteFileUp<CR>", { noremap = true, silent = true })
+
+	vim.cmd([[command! SyncRemoteUp lua require('sync-remote').syncRemoteUp()]])
+	vim.api.nvim_set_keymap("n", "<leader>M", ":SyncRemoteUp<CR>", { noremap = true, silent = true })
+end
+
+function M.syncRemoteUp()
+	if not isConfigFileValid() then
+		return
+	end
+
+	local local_folder_path = config.local_root
+	local remote_folder_path = config.remote_root
+	local rsync_command = "rsync -vz --no-whole-file " .. local_folder_path .. " " .. remote_folder_path
+	print("Sync start", rsync_command)
+	vim.fn.jobstart(rsync_command, {
+		on_exit = function()
+			print("Sync complete", local_folder_path)
+		end,
+		on_stderr = function(_, data)
+			print("Sync failed", rsync_command)
+			if data and #data > 0 then
+				print("Error output:", data)
+			end
+		end,
+	})
 end
 
 function M.syncRemoteFileUp()
