@@ -2,7 +2,8 @@ local M = {}
 local config = {}
 local cwd = vim.loop.cwd()
 
-local function loadConfig()
+function M.loadConfig()
+	vim.notify("Initializing sync-remote")
 	local configFilePath = cwd .. "/.nvim/config.txt"
 	local file = io.open(configFilePath, "r")
 
@@ -16,7 +17,17 @@ local function loadConfig()
 			end
 		end
 		file:close()
-		config.local_root = config.local_root:gsub("~", os.getenv("HOME"))
+		if next(config) == nil then
+			vim.notify(".nvim/config.txt file is empty!")
+		else
+			config.local_root = config.local_root:gsub("~", os.getenv("HOME"))
+			vim.notify("Completed initializing!")
+		end
+	else
+		vim.notify(
+			".nvim/config.txt file not found in current working directory. If the current working directory is the local folder you wish to sync with remote, then you can add the config file here: "
+				.. cwd
+		)
 	end
 end
 
@@ -31,12 +42,9 @@ local function isConfigFileValid()
 end
 
 function M.setup()
-	loadConfig()
-
+	vim.cmd([[command! SyncRemoteStart lua require('sync-remote').loadConfig()]])
 	vim.cmd([[command! SyncRemoteFileUp lua require('sync-remote').syncRemoteFileUp()]])
-
 	vim.cmd([[command! SyncRemoteUp lua require('sync-remote').syncRemoteUp()]])
-
 	vim.cmd([[command! SyncRemoteDown lua require('sync-remote').syncRemoteDown()]])
 end
 
