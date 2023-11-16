@@ -33,10 +33,7 @@ end
 
 local function isConfigFileValid()
 	if next(config) == nil then
-		vim.notify(
-			".nvim/config.txt file not found in current working directory. If the current working directory is the local folder you wish to sync with remote, then you can add the config file here: "
-				.. cwd
-		)
+		vim.notify("Please run SyncRemoteStart to load config file" .. cwd)
 		return false
 	end
 end
