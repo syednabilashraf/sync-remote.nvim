@@ -1,10 +1,14 @@
 #!/bin/bash
 remote_root=$1
-echo "executing" >>~/debug.log
-for path in ${@:2}; do
-	full_path=${WATCHMAN_ROOT}/$path
-	if [ -e "$full_path" ] && [[ "$full_path" != *".git"* ]]; then
-		echo "rsync -rvzu --no-whole-file ${WATCHMAN_ROOT}/$path $remote_root/$path" >>~/debug.log
-		rsync -rvzu --no-whole-file ${WATCHMAN_ROOT}/$path $remote_root/$path
+
+sync_remote() {
+	local_full_path=${WATCHMAN_ROOT}/$1
+	remote_full_path=$remote_root/$1
+	if [ -e "$local_full_path" ]; then
+		rsync -rvzu --delete --no-whole-file $local_full_path $remote_full_path
 	fi
+}
+
+for path in "${@:2}"; do
+	sync_remote "$path"
 done
