@@ -1,6 +1,8 @@
+local progress = require("sync-remote.progress")
 local M = {}
 local config = {}
 local cwd = vim.loop.cwd()
+
 local plugin_file_path = debug.getinfo(1, "S").source:sub(2)
 local plugin_directory_path = vim.fn.fnamemodify(plugin_file_path, ":h")
 local scripts_path = plugin_directory_path .. "/scripts"
@@ -110,14 +112,43 @@ function M.loadPlugin()
 end
 
 local function sync(source, destination)
-	local rsync_command = "rsync -rzu --delete --no-whole-file " .. source .. "/ " .. destination .. "/"
-	print("Sync start", rsync_command)
+	local rsync_command = "rsync -rzu --delete --no-whole-file --info=progress2 "
+		.. source
+		.. "/ "
+		.. destination
+		.. "/"
+
+	progress:show_sync_in_progress()
 	vim.fn.jobstart(rsync_command, {
+		on_stdout = function(_, data)
+			for _, line in ipairs(data) do
+				local percentage = tonumber(string.match(line, "(%d+)%%"))
+				if percentage then
+					progress:set_message("Sync progress: " .. percentage .. "%")
+				end
+			end
+		end,
 		on_exit = function()
-			vim.notify("Sync complete ", vim.log.levels.INFO)
+			local notification_id = progress:get_notification_state().id
+			progress:remove_sync_in_progress()
+			vim.notify("Sync complete", vim.log.levels.INFO, {
+				title = "Sync status",
+				icon = "",
+				replace = notification_id,
+				timeout = 3000,
+			})
 		end,
 		on_stderr = function()
-			print("Sync failed " .. rsync_command)
+			local notification_id = progress:get_notification_state().id
+			progress:remove_sync_in_progress()
+			vim.notify(
+				"Sync failed, please check if your config is valid \n and make sure you have ssh access to remote",
+				vim.log.levels.ERROR,
+				{
+					replace = notification_id,
+					timeout = 3000,
+				}
+			)
 		end,
 	})
 end
