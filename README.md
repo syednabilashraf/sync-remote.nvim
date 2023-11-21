@@ -22,14 +22,21 @@ sudo apt install watchman
 ```lua
 -- plugins/sync-remote.lua:
 return {
-    'syednabilashraf/sync-remote.nvim'
-    }
+  "syednabilashraf/sync-remote.nvim",
+  config = function()
+    require("sync-remote"):setup()
+  end
+}
+
 ```
 
 ### Using [Packer.nvim](https://github.com/wbthomason/packer.nvim)
 ```lua
 use {
-'syednabilashraf/sync-remote.nvim'
+'syednabilashraf/sync-remote.nvim',
+  config = function()
+    require("sync-remote"):setup()
+  end
 }
 ```
     
