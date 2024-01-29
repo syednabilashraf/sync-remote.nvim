@@ -85,6 +85,7 @@ local function loadConfig()
 		else
 			config.local_root = config.local_root:gsub("~", os.getenv("HOME")) .. "/"
 			config.remote_root = config.remote_root .. "/"
+			config.username, config.host = config.remote_root:match("([^@]+)@([^:/]+)")
 		end
 	end
 end
@@ -101,18 +102,35 @@ local function isConfigFileLoaded()
 	return true
 end
 
+local function connectToRemote(callback)
+	local ssh_command = "ssh -f -N -M -o ControlPath=~/.ssh/control-syncremote "
+		.. config.username
+		.. "@"
+		.. config.host
+
+	vim.fn.jobstart(ssh_command, {
+		on_exit = function()
+			vim.notify("Connected to " .. config.username .. "@" .. config.host, vim.log.levels.INFO)
+			callback()
+		end,
+	})
+end
+
 function M.loadPlugin()
 	vim.notify("Initializing sync-remote", vim.log.levels.INFO)
 	loadConfig()
+
 	if config.remote_root and config.local_root then
-		loadWatcher(function()
-			vim.notify("Completed initializing!", vim.log.levels.INFO)
+		connectToRemote(function()
+			-- loadWatcher(function()
+			-- 	vim.notify("Completed initializing!", vim.log.levels.INFO)
+			-- end)
 		end)
 	end
 end
 
 local function sync(source, destination)
-	local rsync_command = "rsync -rzu --delete --no-whole-file --info=progress2 "
+	local rsync_command = "rsync -rzu -e 'ssh -o ControlPath=~/.ssh/config/control-syncremote' --delete --no-whole-file --info=progress2 "
 		.. source
 		.. "/ "
 		.. destination
@@ -194,11 +212,33 @@ function M.syncRemoteFileUp()
 	end
 end
 
+function M.saveAfterSync()
+	return false
+end
+
+function M.autowritefile()
+	vim.notify("autowritefile")
+end
+
+function M.autocreatefile()
+	vim.notify("autocreatefile")
+end
+
 function M.setup()
 	vim.cmd([[command! SyncRemoteStart lua require('sync-remote').loadPlugin()]])
 	vim.cmd([[command! SyncRemoteFileUp lua require('sync-remote').syncRemoteFileUp()]])
 	vim.cmd([[command! SyncRemoteUp lua require('sync-remote').syncRemoteUp()]])
 	vim.cmd([[command! SyncRemoteDown lua require('sync-remote').syncRemoteDown()]])
+
+	-- 	vim.cmd([[
+	--   augroup MyAutocommands
+	--     autocmd!
+	--     autocmd BufWritePre * lua require('sync-remote').autowritefile()
+	--     autocmd Filetype * lua require('sync-remote').autocreatefile()
+	--   augroup END
+	-- ]])
 end
 
 return M
+
+-- ➜  ~ rsync -rvzu --filter=':- .gitignore' --exclude='.git' --include='**.gitignore' --info=progress2 -e 'ssh -o ControlPath=~/.ssh/control-syncremote' nabil.ashraf@172.27.220.10:/mnt/ephemeral/workspace/ /home/syednabilashraf/remotecms
